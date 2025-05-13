@@ -1,52 +1,57 @@
 use lofty::{AudioFile, TaggedFile, TaggedFileExt};
 
-use super::{requested_tags::RequestedTags, tag_transformer::TagTransformer};
+use super::{requested_tags::RequestedTags, tag_applicator::TagApplicator};
 
-use super::transformers::{album_artist, base_tags};
+use super::applicators::{album_artist, base_tags};
+
+pub struct TagEditRequest<'a> {
+    pub tagged_file: &'a mut TaggedFile,
+    pub tags: &'a RequestedTags,
+}
 
 pub struct TagEditor {
-    tagged_file: TaggedFile,
-    request: RequestedTags,
-
-    transformers: Vec<Box<dyn TagTransformer>>,
+    applicators: Vec<Box<dyn TagApplicator>>,
 }
 
 impl TagEditor {
-    pub fn new(tagged_file: TaggedFile, request: RequestedTags) -> Self {
+    pub fn new() -> Self {
         Self {
-            tagged_file,
-            request,
-            transformers: vec![
-                Box::new(base_tags::TitleTransformer {}),
-                Box::new(base_tags::ArtistTransformer {}),
-                Box::new(base_tags::AlbumTransformer {}),
-                Box::new(album_artist::AlbumArtistTransformer {}),
+            applicators: vec![
+                Box::new(base_tags::TitleApplicator {}),
+                Box::new(base_tags::ArtistApplicator {}),
+                Box::new(base_tags::AlbumApplicator {}),
+                Box::new(album_artist::AlbumArtistApplicator {}),
             ],
         }
     }
 
-    pub fn apply_and_save(&mut self, to_path: String) -> Result<(), String> {
-        self.apply()?;
-        self.save(to_path)
+    pub fn apply_and_save(
+        &self,
+        request: &mut TagEditRequest,
+        to_path: String,
+    ) -> Result<(), String> {
+        self.apply(request)?;
+        self.save(request, to_path)
     }
 
-    pub fn apply(&mut self) -> Result<(), String> {
-        let tag = self
+    pub fn apply(&self, request: &mut TagEditRequest) -> Result<(), String> {
+        let tag = request
             .tagged_file
             .primary_tag_mut()
             .ok_or_else(|| "No primary tag found in the file".to_string())?;
 
-        for transformer in &mut self.transformers {
-            if transformer.should_transform(tag, &self.request) {
-                transformer.transform(tag, &self.request)?;
+        for applicator in &self.applicators {
+            if applicator.should_apply(tag, request.tags) {
+                applicator.apply(tag, request.tags)?;
             }
         }
 
         Ok(())
     }
 
-    pub fn save(&mut self, to_path: String) -> Result<(), String> {
-        self.tagged_file
+    pub fn save(&self, request: &TagEditRequest, to_path: String) -> Result<(), String> {
+        request
+            .tagged_file
             .save_to_path(to_path)
             .map_err(|e| format!("Failed to save file: {e}"))
     }
