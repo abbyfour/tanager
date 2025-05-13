@@ -1,4 +1,4 @@
-use crate::tags::requested_tags::TagValue;
+use crate::tags::requested_tags::ClearableValue;
 use crate::tags::{requested_tags::RequestedTags, tag_applicator::TagApplicator};
 
 pub struct AlbumArtistApplicator {}
@@ -10,11 +10,11 @@ impl TagApplicator for AlbumArtistApplicator {
 
     fn apply(&self, tag: &mut lofty::Tag, values: &RequestedTags) -> Result<(), String> {
         match &values.album_artist {
-            Some(TagValue::String(album_artist)) => {
+            Some(ClearableValue::Value(album_artist)) => {
                 tag.insert_text(lofty::ItemKey::AlbumArtist, album_artist.clone());
                 Ok(())
             }
-            Some(TagValue::Clear { clear: _ }) => {
+            Some(ClearableValue::Clear { clear: _ }) => {
                 tag.insert_text(lofty::ItemKey::AlbumArtist, String::new());
                 Ok(())
             }

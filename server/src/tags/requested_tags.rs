@@ -2,8 +2,8 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
-pub enum TagValue {
-    String(String),
+pub enum ClearableValue<T = String> {
+    Value(T),
 
     // This is used to clear a tag,
     // the clear value is not used but is required for deserialization
@@ -15,8 +15,8 @@ pub enum TagValue {
 
 #[derive(Debug, Deserialize)]
 pub struct RequestedTags {
-    pub title: Option<TagValue>,
-    pub artist: Option<TagValue>,
-    pub album: Option<TagValue>,
-    pub album_artist: Option<TagValue>,
+    pub title: Option<ClearableValue>,
+    pub artist: Option<ClearableValue>,
+    pub album: Option<ClearableValue>,
+    pub album_artist: Option<ClearableValue>,
 }

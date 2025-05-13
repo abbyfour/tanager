@@ -1,5 +1,5 @@
 use crate::tags::{
-    requested_tags::{RequestedTags, TagValue},
+    requested_tags::{ClearableValue, RequestedTags},
     tag_applicator::TagApplicator,
 };
 use lofty::Accessor;
@@ -13,11 +13,11 @@ impl TagApplicator for TitleApplicator {
 
     fn apply(&self, tag: &mut lofty::Tag, values: &RequestedTags) -> Result<(), String> {
         match &values.title {
-            Some(TagValue::String(title)) => {
+            Some(ClearableValue::Value(title)) => {
                 tag.set_title(title.clone());
                 Ok(())
             }
-            Some(TagValue::Clear { clear: _ }) => {
+            Some(ClearableValue::Clear { clear: _ }) => {
                 tag.insert_text(lofty::ItemKey::TrackTitle, String::new());
                 Ok(())
             }
@@ -35,11 +35,11 @@ impl TagApplicator for ArtistApplicator {
 
     fn apply(&self, tag: &mut lofty::Tag, values: &RequestedTags) -> Result<(), String> {
         match &values.artist {
-            Some(TagValue::String(artist)) => {
+            Some(ClearableValue::Value(artist)) => {
                 tag.set_artist(artist.clone());
                 Ok(())
             }
-            Some(TagValue::Clear { clear: _ }) => {
+            Some(ClearableValue::Clear { clear: _ }) => {
                 tag.insert_text(lofty::ItemKey::TrackArtist, String::new());
                 Ok(())
             }
@@ -57,11 +57,11 @@ impl TagApplicator for AlbumApplicator {
 
     fn apply(&self, tag: &mut lofty::Tag, values: &RequestedTags) -> Result<(), String> {
         match &values.album {
-            Some(TagValue::String(album)) => {
+            Some(ClearableValue::Value(album)) => {
                 tag.set_album(album.clone());
                 Ok(())
             }
-            Some(TagValue::Clear { clear: _ }) => {
+            Some(ClearableValue::Clear { clear: _ }) => {
                 tag.insert_text(lofty::ItemKey::AlbumTitle, String::new());
                 Ok(())
             }
